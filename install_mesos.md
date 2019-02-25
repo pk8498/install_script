@@ -24,8 +24,20 @@ $ echo "deb http://repos.mesosphere.io/${DISTRO} ${CODENAME} main" | sudo tee /e
 
 $ sudo apt-get -y update
 $ sudo apt-get install -y mesos marathon
-$ echo ${ID} | sudo tee /etc/zookeeper/conf/myid
-"install_mesos.md" 81L, 2733C
+
+$ echo ${zookeeper-myid} | sudo tee /etc/zookeeper/conf/myid
+$ echo 'server.1=mesos-master-01:2888:3888' | sudo tee -a /etc/zookeeper/conf/zoo.cfg
+$ echo 'server.2=mesos-master-02:2888:3888' | sudo tee -a /etc/zookeeper/conf/zoo.cfg
+
+$ echo 'zk://mesos-master-01:2181,mesos-master-02:2181/mesos' | sudo tee /etc/mesos/zk
+$ echo 2 | sudo tee /etc/mesos-master/quorum
+$ echo ${master-ip} | sudo tee /etc/mesos-master/ip
+$ sudo cp /etc/mesos-master/ip /etc/mesos-master/hostname
+
+$ echo 'MARATHON_MASTER="zk://mesos-master-01:2181,mesos-master-02:2181/mesos"' | sudo tee -a /etc/default/marathon
+$ echo 'MARATHON_ZK="zk://mesos-master-01:2181,mesos-master-02:2181/marathon"' | sudo tee -a /etc/default/marathon
+$ echo 'MESOSPHERE_HTTP_CREDENTIALS="admin:admin"' | sudo tee -a /etc/default/marathon
+$ echo 'MARATHON_HOSTNAME='${master-ip}'' | sudo tee -a /etc/default/marathon
 
 $ service zookeeper start
 $ service mesos-master start
